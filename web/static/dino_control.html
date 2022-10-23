@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-US">
+ 
+<head>
+<style>
+.btn-group .button {
+  background-color: #008CBA; /* Blue */
+  border: 1px solid green;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  float: left;
+  border-radius: 12px;
+  width: 50%;
+  height: 90px;
+}
+
+.btn-group .button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+
+.btn-group .button:hover {
+  background-color: #3e8e41;
+}
+</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dino Control Room</title>
+</head>
+ 
+<body>
+<div class="btn-group">
+  <button id="btn-on" class="button">On</button>
+  <button id="btn-off" class="button">Off</button>
+</div><br><br><br>
+<div class="btn-group">
+  <button id="btn-brigher" class="button">Brighter</button>
+  <button id="btn-dim" class="button">Dimmer</button>
+</div>
+  <script>
+     const button_on = document.getElementById('btn-on');
+	 const button_off = document.getElementById('btn-off');
+	 const button_brighter = document.getElementById('btn-brigher');
+	 const button_dim = document.getElementById('btn-dim');
+
+	button_on.addEventListener('click', async _ => {
+	  try {     
+		const response = await fetch('./on', {
+		  method: 'post',
+		  body: {
+			"led": "on"
+		  }
+		});
+		console.log('Completed!', response);
+	  } catch(err) {
+		console.error(`Error: ${err}`);
+	  }
+	});
+	
+	button_off.addEventListener('click', async _ => {
+	  try {     
+		const response = await fetch('./off', {
+		  method: 'post',
+		  body: {
+			"led": "on"
+		  }
+		});
+		console.log('Completed!', response);
+	  } catch(err) {
+		console.error(`Error: ${err}`);
+	  }
+	});
+	button_brighter.addEventListener('click', async _ => {
+	  try {     
+		const response = await fetch('./brightness_up', {
+		  method: 'post',
+		  body: {
+			"led": "on"
+		  }
+		});
+		console.log('Completed!', response);
+	  } catch(err) {
+		console.error(`Error: ${err}`);
+	  }
+	});
+	button_dim.addEventListener('click', async _ => {
+	  try {     
+		const response = await fetch('./brightness_down', {
+		  method: 'post',
+		  body: {
+			"led": "on"
+		  }
+		});
+		console.log('Completed!', response);
+	  } catch(err) {
+		console.error(`Error: ${err}`);
+	  }
+	});
+
+  </script>
+
+</body>
+ 
+</html>

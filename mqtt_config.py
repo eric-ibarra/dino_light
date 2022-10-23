@@ -1,0 +1,4 @@
+MQTT_SERVER = ''
+MQTT_USER = b''
+MQTT_PW = b''
+CONFIG_SERVER=''

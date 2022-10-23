@@ -3,6 +3,11 @@ import neopixel
 import time
 import math
 
+try:
+    from nv_led_config import MAX_BRIGHTNESS
+except:
+    MAX_BRIGHTNESS = 0.15
+
 STEPS = 80
 STEP_SIZE = math.pi/STEPS/2
 
@@ -15,14 +20,20 @@ class LED_Control(object):
         self.pixel_length = pixel_length
         self.np = neopixel.NeoPixel(machine.Pin(data_pin), pixel_length)
 
-        self.max_brightness = 0.15 # was 0.75
+        self.max_brightness = MAX_BRIGHTNESS
         self.fade_map=[]
         self.config_brightness(self.max_brightness)
+
+        self.last_position = 0
+        self.state_enable = True
 
     def config_brightness(self, value):
         ''' brightness 0 to 1'''
         self.max_brightness = value
         self.fade_map = [int(math.sin(x * STEP_SIZE) * 255 * value) for x in range(0, STEPS)]
+
+        with open('nv_led_config.py', 'w') as outfile:
+            outfile.write('MAX_BRIGHTNESS=%.1f' % value)
 
     def get_colors(self, position, pixel_offset):
         position += pixel_offset
@@ -42,17 +53,28 @@ class LED_Control(object):
             color_blue = self.fade_map[(position) % STEPS]
         return color_red, color_green, color_blue
 
+    def async_flow(self):
+        if self.state_enable:
+            self.last_position += 1
+            color_red, color_green, color_blue = self.get_colors(self.last_position, 0)
+            head_red, head_green, head_blue = self.get_colors(self.last_position, DINO_HEAD_OFFSET)
+            for led in range(0, self.pixel_length):
+                if led < DINO_HEAD_NECK:
+                    self.np[led] = (head_red, head_green, head_blue)
+                else:
+                    self.np[led] = (color_red, color_green, color_blue)
+            self.np.write()
+
+    def all_off(self):
+        for led in range(0, self.pixel_length):
+            self.np[led] = (0, 0, 0)
+        self.np.write()
+
     def flow(self, timeout=0):
-        pixel_offset = 0
-        loops=5
         time_delay = 0.025
 
-        #for i in range(0, loops):
         while True:
-            #red
             for position in range(0,STEPS*3):
-                #color_blue = self.fade_map[-(position + pixel_offset+1) % STEPS]
-                #color_red = self.fade_map[(position + pixel_offset) % STEPS]
                 color_red, color_green, color_blue = self.get_colors(position, 0)
                 head_red, head_green, head_blue = self.get_colors(position, DINO_HEAD_OFFSET)
                 for led in range(0, self.pixel_length):
@@ -62,28 +84,3 @@ class LED_Control(object):
                         self.np[led] = (color_red, color_green, color_blue)
                 self.np.write()
                 time.sleep(time_delay)
-            '''
-            #green
-            for position in range(0,STEPS):
-                color_red = self.fade_map[-(position + pixel_offset+1) % STEPS]
-                color_green = self.fade_map[(position + pixel_offset) % STEPS]
-                for led in range(0, self.pixel_length):
-                    self.np[led] = (color_red, color_green, 0)
-                self.np.write()
-                time.sleep(time_delay)
-            # blue
-            for position in range(0,STEPS):
-                color_green = self.fade_map[-(position + pixel_offset+1) % STEPS]
-                color_blue = self.fade_map[(position + pixel_offset) % STEPS]
-                for led in range(0, self.pixel_length):
-                    self.np[led] = (0, color_green, color_blue)
-                self.np.write()
-                time.sleep(time_delay)
-            '''
-
-
-        #for position in range(0, STEPS*loops):
-        #    for led in range(0, self.pixel_length):
-        #        self.np[led] = (fade_map[(position + pixel_offset)%STEPS], fade_map[(position + pixel_offset + 120)%STEPS], fade_map[(position + pixel_offset + 240)%STEPS])
-        #    self.np.write()
-        #    time.sleep(0.1)
